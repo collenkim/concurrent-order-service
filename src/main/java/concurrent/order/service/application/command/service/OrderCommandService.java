@@ -4,7 +4,6 @@ import concurrent.order.service.application.command.dto.OrderCommandRequest;
 import concurrent.order.service.cd.OrderStatus;
 import concurrent.order.service.domain.model.Order;
 import concurrent.order.service.domain.service.OrderDomainService;
-import concurrent.order.service.infrastructure.rds.entity.OrderEntity;
 import reactor.core.publisher.Mono;
 
 import java.util.UUID;
@@ -20,7 +19,7 @@ public class OrderCommandService {
         domainService.validateNewOrder(order);
 
         // Entity 변환 후 저장
-        OrderEntity entity = OrderMapper.toEntity(order);
+        //OrderEntity entity = OrderMapper.toEntity(order);
         return commandRepository.save(entity)
                 .map(OrderMapper::toDomain);
     }
