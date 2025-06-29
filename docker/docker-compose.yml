@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  mariadb:
+    image: mariadb:11
+    container_name: order-mariadb
+    environment:
+      MARIADB_DATABASE: order_db
+      MARIADB_USER: order_user
+      MARIADB_PASSWORD: order_user1234
+      MARIADB_ROOT_PASSWORD: root_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./data/mariadb:/var/lib/mysql
+      - ./init/mariadb:/docker-entrypoint-initdb.d
+
+  redis:
+    image: redis:7
+    container_name: order-redis
+    ports:
+      - "6379:6379"
+
+  mongodb:
+    image: mongo:6
+    container_name: order-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./data/mongodb:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: order_mongo_db
+      MONGO_INITDB_ROOT_USERNAME: mongo_user
+      MONGO_INITDB_ROOT_PASSWORD: mongo_pass
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: order-zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: order-kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: order-zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1

@@ -1,0 +1,45 @@
+
+server:
+  port: 9090
+
+spring:
+  application:
+    name: concurrent-order-service
+
+  datasource:
+    url: jdbc:mariadb://192.168.65.1:3306/order_db
+    username: order_user
+    password: order_user1234
+    driver-class-name: org.mariadb.jdbc.Driver
+
+    hikari:
+      minimum-idle: 3                # 최소 유휴 커넥션 수
+      maximum-pool-size: 5           # 최대 풀 크기
+      idle-timeout: 600000           # 유휴 커넥션 제거 전 대기 시간 (10분)
+      max-lifetime: 1800000          # 커넥션 최대 수명 (30분)
+      connection-timeout: 30000      # 커넥션 획득 최대 대기 시간 (30초)
+      connection-test-query: SELECT 1
+      pool-name: HikariCP-OrderPool
+      auto-commit: false             # 트랜잭션 일관성 위해 false
+      leak-detection-threshold: 15000 # 커넥션 누수 감지 (15초)
+
+  jpa:
+    show-sql: true                  # 실행 쿼리 로깅
+    properties:
+      hibernate:
+        format_sql: true            # SQL 포맷팅
+        use_sql_comments: true      # SQL에 주석 추가
+        jdbc:
+          lob:
+            non_contextual_creation: true  # LOB 처리 안정화 옵션
+        generate_statistics: false  # 성능 통계 수집
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+    hibernate:
+      ddl-auto: validate             # 스키마 자동 업데이트 정책
+
+  data:
+    redis:
+      database: 0
+      host: 127.0.0.1
+      port: 6379
