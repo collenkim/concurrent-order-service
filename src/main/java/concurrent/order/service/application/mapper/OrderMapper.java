@@ -1,6 +1,8 @@
 package concurrent.order.service.application.mapper;
 
 import concurrent.order.service.application.command.dto.CreateOrderCommand;
+import concurrent.order.service.application.command.dto.OrderCommandResponse;
+import concurrent.order.service.application.query.dto.CreateOrderItemResponse;
 import concurrent.order.service.domain.model.Order;
 import concurrent.order.service.domain.model.OrderItem;
 import concurrent.order.service.infrastructure.rds.entity.OrderEntity;
@@ -27,17 +29,34 @@ public class OrderMapper {
         return new Order(orderId, memberId, items);
     }
 
-    public static OrderEntity toEntity(Order domain) {
-        List<OrderItemEntity> itemEntities = domain.getItems().stream()
-            .map(i -> new OrderItemEntity(null, i.productId(), i.quantity(), i.price()))
+    public static OrderEntity toEntity(String orderId, String memberId, CreateOrderCommand command) {
+        List<OrderItemEntity> items = command.items().stream()
+            .map(itemCmd -> new OrderItem(
+                itemCmd.productId(),
+                itemCmd.quantity(),
+                itemCmd.pricePerItem()
+            ))
             .toList();
-        return OrderEntity.createOrder().builder()
-            .orderId(domain.getOrderId())
-            .userId(domain.getUserId())
-            .totalAmount(domain.totalAmount())
-            .status("CREATED")
-            .items(itemEntities)
-            .build();
+
+        return new OrderEntity(orderId, memberId, items);
+    }
+
+    public static CreateOrderItemResponse toResponse(OrderEntity entity) {
+        List<OrderItemEntity> items = entity.getOrderItems().stream()
+            .map(item -> new OrderItemResponse(
+                item.getProductId(),
+                item.getQuantity(),
+                item.getPricePerItem()
+            ))
+            .toList();
+
+        return new CreateOrderItemResponse(
+            entity.getOrderId(),
+            entity.getMemberId(),
+            entity.getTotalPrice(),
+            entity.getStatus().name(),
+            items
+        );
     }
 
 }

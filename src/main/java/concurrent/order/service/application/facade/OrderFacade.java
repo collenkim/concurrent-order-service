@@ -26,21 +26,20 @@ public class OrderFacade {
 
         Order order = OrderMapper.toDomain(orderId, "test123", request);
 
-        order.applyDiscount(command.discountRate()); // 할인 적용
+        order.applyDiscount(request.discountRate()); // 할인 적용
         order.validate(); // 유효성 검사
 
         //Order 등록
         OrderEntity entity = OrderMapper.toEntity(order);
 
-        orderCommandService.create(entity);
-
-        return orderQueryService.get(request)
-                .map(order -> new OrderCommandResponse(
-                        order.getId(),
-                        order.getMemberId(),
-                        order.getTotalPrice(),
-                        order.getStatus().name()
-                ));
+        return orderCommandService.create(entity)
+            .flatMap(aved -> orderQueryService.getOrderByOrderId(orderId))
+            .map(queried -> new OrderCommandResponse(
+                queried.getId(),
+                queried.getMemberId(),
+                queried.getTotalPrice(),
+                queried.getStatus().name()
+            ));
     }
 
 }
