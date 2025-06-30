@@ -20,9 +20,9 @@ public class OrderRouter {
     @Bean
     public RouterFunction<ServerResponse> route() {
         return RouterFunctions
-                .route(POST("/orders").and(accept(MediaType.APPLICATION_JSON)), commandHandler::createOrder)
-                .andRoute(GET("/orders/{orderId}").and(accept(MediaType.APPLICATION_JSON)), queryHandler::getOrder)
-                .andRoute(DELETE("/orders/{orderId}"), commandHandler::cancelOrder);
+                .route(POST("/orders").and(accept(MediaType.APPLICATION_JSON)), commandHandler::createOrder);
+                //.andRoute(GET("/orders/{orderId}").and(accept(MediaType.APPLICATION_JSON)), queryHandler::getOrder)
+                //.andRoute(DELETE("/orders/{orderId}"), commandHandler::cancelOrder);
     }
 
 }
