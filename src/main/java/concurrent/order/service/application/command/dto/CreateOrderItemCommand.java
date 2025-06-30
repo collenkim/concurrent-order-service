@@ -13,5 +13,5 @@ public record CreateOrderItemCommand(
         Integer quantity,
 
         @Positive(message = "상품 가격은 0보다 커야 합니다.")
-        BigDecimal pricePerItem
+        BigDecimal productPrice
 ){}

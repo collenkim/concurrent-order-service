@@ -35,7 +35,7 @@ public class OrderEntity extends BaseEntity{
     @Column(name = "total_item_cnt", nullable = false)
     private Integer totalItemCnt; // 주문 수량
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "order")
     private List<OrderItemEntity> orderItems = new ArrayList<>();
 
     private OrderEntity(String orderId, OrderStatus status, String userId, Integer totalItemCnt, List<OrderItemEntity> orderItems) {
@@ -46,7 +46,7 @@ public class OrderEntity extends BaseEntity{
         this.orderItems = orderItems;
     }
 
-    public static OrderEntity createOrder(String orderId, OrderStatus status, String userId, Integer totalItemCnt, List<OrderItemEntity> orderItems){
+    public static OrderEntity createOrderEntity(String orderId, OrderStatus status, String userId, Integer totalItemCnt, List<OrderItemEntity> orderItems){
         return new OrderEntity(orderId, status, userId, totalItemCnt, orderItems);
     }
 

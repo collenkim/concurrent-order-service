@@ -4,10 +4,25 @@ import concurrent.order.service.infrastructure.rds.entity.OrderEntity;
 import concurrent.order.service.infrastructure.rds.entity.OrderItemEntity;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 public interface OrderCommandService {
 
-    Mono<OrderEntity> create(OrderEntity entity);
+    /**
+     * 주문 생성 명령
+     *
+     * @param entity
+     * @param entities
+     * @return
+     */
+    Mono<Void> createOrder(OrderEntity entity, List<OrderItemEntity> entities);
 
-    Mono<OrderEntity> cancel(String orderId);
+    /**
+     * 주문 취소 명령
+     *
+     * @param orderId
+     * @return
+     */
+    Mono<Void> cancelOrder(String orderId);
 
 }

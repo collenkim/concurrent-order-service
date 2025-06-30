@@ -6,7 +6,10 @@ import concurrent.order.service.infrastructure.rds.repository.OrderItemRepositor
 import concurrent.order.service.infrastructure.rds.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Mono;
+
+import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -15,13 +18,11 @@ public class OrderQueryServiceImpl implements OrderQueryService {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
 
+    @Transactional(readOnly = true)
     @Override
-    public Mono<OrderEntity> getOrderByOrderId(String orderId) {
-        return null;
+    public Mono<OrderEntity> getOrder(String orderId) {
+        return orderRepository.findByOrderId(orderId)
+                .switchIfEmpty(Mono.error(new NoSuchElementException("Order not found: " + orderId)));
     }
 
-    @Override
-    public Mono<OrderItemEntity> getOrderItemByOrderId() {
-        return null;
-    }
 }

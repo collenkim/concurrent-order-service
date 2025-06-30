@@ -17,6 +17,9 @@ public class ProductEntity extends BaseEntity{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "product_id", nullable = false, unique = true)
+    private String productId;
+
     @Column(name = "name", nullable = false)
     private String name;
 
@@ -26,14 +29,15 @@ public class ProductEntity extends BaseEntity{
     @Column(name = "price", nullable = false)
     private BigDecimal price;
 
-    private ProductEntity(String name, BigDecimal price, Integer stockQuantity) {
+    private ProductEntity(String productId, String name, BigDecimal price, Integer stockQuantity) {
+        this.productId = productId;
         this.name = name;
         this.price = price;
         this.stockQuantity = stockQuantity;
     }
 
-    public static ProductEntity createProduct(String name, BigDecimal price, Integer stockQuantity){
-        return new ProductEntity(name, price, stockQuantity);
+    public static ProductEntity createProductEntity(String productId, String name, BigDecimal price, Integer stockQuantity){
+        return new ProductEntity(productId, name, price, stockQuantity);
     }
 
 }
