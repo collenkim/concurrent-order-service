@@ -1,6 +1,8 @@
 package concurrent.order.service.domain.model;
 
 import concurrent.order.service.cd.OrderStatus;
+
+import java.math.BigDecimal;
 import java.util.Objects;
 import lombok.Getter;
 
@@ -12,7 +14,7 @@ public class Order {
     private final String orderId;
     private final String memberId;
     private final List<OrderItem> items;
-    private OrderStatus status;
+    private final OrderStatus status;
 
     public Order(String orderId, String memberId, List<OrderItem> items) {
         this(orderId, memberId, items, OrderStatus.CREATED);
@@ -25,11 +27,10 @@ public class Order {
         this.items = Objects.requireNonNull(items);
     }
 
-    public void cancel() {
-        if (status == OrderStatus.CANCELED) {
-            throw new IllegalStateException("이미 취소된 주문입니다.");
-        }
-        status = OrderStatus.CANCELED;
+    public BigDecimal calculateTotalAmount() {
+        return items.stream()
+                .map(item -> item.getProductPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
 }

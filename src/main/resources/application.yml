@@ -36,7 +36,7 @@ spring:
         dialect: org.hibernate.dialect.MariaDBDialect
 
     hibernate:
-      ddl-auto: update             # 스키마 자동 업데이트 정책
+      ddl-auto: create             # 스키마 자동 업데이트 정책
 
   data:
     redis:
@@ -48,7 +48,7 @@ logging:
   pattern:
     file: "%d{yyyy-MM-dd HH:mm:ss,UTC} [%thread] %-5level %logger{36} - %msg%n"
   file:
-    name: /Users/collenkim/logs/order-service/app.log
+    name: /Users/kim-woosuk/logs/order-service/app.log
   logback:
     rolling-policy:
       max-file-size: 10MB

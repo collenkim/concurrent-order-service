@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,19 +36,23 @@ public class OrderEntity extends BaseEntity{
     @Column(name = "total_item_cnt", nullable = false)
     private Integer totalItemCnt; // 주문 수량
 
+    @Column(name = "total_amount", nullable = false)
+    private BigDecimal totalAmount;
+
     @OneToMany(mappedBy = "order")
     private List<OrderItemEntity> orderItems = new ArrayList<>();
 
-    private OrderEntity(String orderId, OrderStatus status, String userId, Integer totalItemCnt, List<OrderItemEntity> orderItems) {
+    private OrderEntity(String orderId, OrderStatus status, String userId, Integer totalItemCnt, BigDecimal totalAmount, List<OrderItemEntity> orderItems) {
         this.orderId = orderId;
         this.status = status;
         this.userId = userId;
         this.totalItemCnt = totalItemCnt;
+        this.totalAmount = totalAmount;
         this.orderItems = orderItems;
     }
 
-    public static OrderEntity createOrderEntity(String orderId, OrderStatus status, String userId, Integer totalItemCnt, List<OrderItemEntity> orderItems){
-        return new OrderEntity(orderId, status, userId, totalItemCnt, orderItems);
+    public static OrderEntity createOrderEntity(String orderId, OrderStatus status, String userId, Integer totalItemCnt, BigDecimal totalAmount, List<OrderItemEntity> orderItems){
+        return new OrderEntity(orderId, status, userId, totalItemCnt, totalAmount, orderItems);
     }
 
     /**

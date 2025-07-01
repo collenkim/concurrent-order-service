@@ -16,7 +16,6 @@ public class OrderResponseDto {
     private String memberId;
     private String orderStatus;
     private BigDecimal totalAmount;
-    private String deliverType;
     private LocalDateTime createAt;
     private List<OrderItemResponseDto> items;
     

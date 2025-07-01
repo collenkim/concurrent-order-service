@@ -1,22 +1,24 @@
 package concurrent.order.service.application.facade;
 
+import concurrent.order.service.application.aspect.DistributedLock;
 import concurrent.order.service.application.command.dto.CreateOrderDto;
 import concurrent.order.service.application.command.dto.CreateOrderItemDto;
+import concurrent.order.service.application.mapper.OrderItemMapper;
 import concurrent.order.service.application.mapper.OrderMapper;
 import concurrent.order.service.application.command.service.OrderCommandService;
 import concurrent.order.service.application.query.OrderQueryService;
 import concurrent.order.service.application.query.ProductQueryService;
 import concurrent.order.service.application.query.dto.OrderResponseDto;
 import concurrent.order.service.domain.model.Order;
-import concurrent.order.service.generator.OrderIdGenerator;
+import concurrent.order.service.generator.IdGenerator;
 import concurrent.order.service.infrastructure.rds.entity.OrderEntity;
 import concurrent.order.service.infrastructure.rds.entity.OrderItemEntity;
+import concurrent.order.service.infrastructure.rds.entity.ProductEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Mono;
+import org.springframework.util.CollectionUtils;
 
 import java.util.List;
-import reactor.core.scheduler.Schedulers;
 
 @Component
 @RequiredArgsConstructor
@@ -34,14 +36,13 @@ public class OrderFacade {
      * @param request
      * @return
      */
-    public Mono<OrderResponseDto> createOrder(CreateOrderDto request) {
+    @DistributedLock(key = "'lock:order:' + #request.userId")
+    public OrderResponseDto createOrder(CreateOrderDto request) {
 
         //Order Id 생성
-        final String orderId = OrderIdGenerator.getGenerateOrderId();
+        final String orderId = IdGenerator.getGenerateOrderId();
 
-        //유저 ID 임시 등록
-        String tempUserId = "test1234";
-        Order order = OrderMapper.toOrderDomain(orderId, tempUserId, request);
+        Order order = OrderMapper.toDomain(orderId, request);
 
         List<String> productIds = request.items().stream()
                 .map(CreateOrderItemDto::productId)
@@ -50,21 +51,27 @@ public class OrderFacade {
         //order.applyDiscount(request.discountRate()); // 할인 적용
         //order.validate(); // 유효성 검사
 
-        return Mono.fromCallable(() -> productQueryService.getProductsByIds(productIds)) // 상품 정보 조회
-            .subscribeOn(Schedulers.boundedElastic())
-            .flatMap(products -> {
-                OrderEntity entity = OrderMapper.toOrderEntity(order);
-                List<OrderItemEntity> entities = OrderMapper.toOrderItemEntities(order, entity, products);
-                entity.addOrderItem(entities);
+        List<ProductEntity> products = productQueryService.getProductsByIds(productIds);
 
-                return Mono.fromRunnable(() -> orderCommandService.createOrder(entity, entities))
-                    .subscribeOn(Schedulers.boundedElastic())
-                    .then(
-                        Mono.fromCallable(() -> orderQueryService.getOrder(orderId))
-                            .subscribeOn(Schedulers.boundedElastic())
-                            .map(OrderMapper::toOrderResponse)
-                    );
-            });
+        /*if(CollectionUtils.isEmpty(products)){
+            throw new
+        }*/
+
+        OrderEntity orderEntity = OrderMapper.toEntity(order);
+        List<OrderItemEntity> orderItems = OrderItemMapper.toEntities(order, orderEntity, products);
+
+        orderCommandService.createOrder(orderEntity, orderItems);
+
+        return OrderMapper.toResponseDto(orderQueryService.getOrder(orderId));
+    }
+
+    /**
+     *
+     * @param orderId
+     * @return
+     */
+    public OrderResponseDto getOrder(String orderId){
+        return OrderMapper.toResponseDto(orderQueryService.getOrder(orderId));
     }
 
 }

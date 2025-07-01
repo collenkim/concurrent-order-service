@@ -7,9 +7,9 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ProductStatus {
 
-    CREATED("CREATE", "주문생성"),
-    COMPLETED("COMPLETED", "주문완료"),
-    CANCELED("CANCELED", "주문취소"),
+    SELLING("SELLING", "판매중"),
+    STOPPED("STOPPED", "판매중지"),
+    SOLD_OUT("SOLD_OUT", "판매완료"),
     ;
 
     private final String code;
