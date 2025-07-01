@@ -20,9 +20,8 @@ public class OrderQueryServiceImpl implements OrderQueryService {
 
     @Transactional(readOnly = true)
     @Override
-    public Mono<OrderEntity> getOrder(String orderId) {
-        return orderRepository.findByOrderId(orderId)
-                .switchIfEmpty(Mono.error(new NoSuchElementException("Order not found: " + orderId)));
+    public OrderEntity getOrder(String orderId) {
+        return orderRepository.findByOrderId(orderId);
     }
 
 }

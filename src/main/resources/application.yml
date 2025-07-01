@@ -7,7 +7,7 @@ spring:
     name: concurrent-order-service
 
   datasource:
-    url: jdbc:mariadb://192.168.65.1:3306/order_db
+    url: jdbc:mariadb://127.0.0.1:3306/order_db
     username: order_user
     password: order_user1234
     driver-class-name: org.mariadb.jdbc.Driver
@@ -33,10 +33,10 @@ spring:
           lob:
             non_contextual_creation: true  # LOB 처리 안정화 옵션
         generate_statistics: false  # 성능 통계 수집
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+        dialect: org.hibernate.dialect.MariaDBDialect
 
     hibernate:
-      ddl-auto: validate             # 스키마 자동 업데이트 정책
+      ddl-auto: update             # 스키마 자동 업데이트 정책
 
   data:
     redis:

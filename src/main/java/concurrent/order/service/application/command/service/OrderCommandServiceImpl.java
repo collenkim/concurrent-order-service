@@ -7,6 +7,7 @@ import concurrent.order.service.infrastructure.rds.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
@@ -29,13 +30,15 @@ public class OrderCommandServiceImpl implements OrderCommandService{
     @Transactional
     @Override
     public Mono<Void> createOrder(OrderEntity entity, List<OrderItemEntity> entities) {
-        return Mono.fromCallable(() -> orderRepository.save(entity))
-                .flatMap(savedOrder -> {
-                    orderItemRepository.saveAll(entities);
-                    return Mono.empty();
-                })
-                .subscribeOn(Schedulers.boundedElastic()) // 블로킹 작업 별도 스케줄러로 분리
-                .then();
+        return Flux.fromIterable(entity.getOrderItems())
+            .concatMap(item -> Mono.fromCallable(() -> orderItemRepository.save(item))
+                .subscribeOn(Schedulers.boundedElastic()))
+            .collectList()
+            .flatMap(savedItems -> Mono.fromCallable(() -> {
+                entity.addOrderItem(savedItems);
+                return orderRepository.save(entity);
+            }).subscribeOn(Schedulers.boundedElastic()))
+            .then();
     }
 
     /**

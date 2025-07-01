@@ -7,6 +7,6 @@ import java.util.List;
 
 public interface ProductQueryService {
 
-    Mono<ProductEntity> getProductsByIds(List<String> productIds);
+    List<ProductEntity> getProductsByIds(List<String> productIds);
 
 }

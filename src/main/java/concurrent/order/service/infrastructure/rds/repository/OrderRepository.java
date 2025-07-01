@@ -1,14 +1,12 @@
 package concurrent.order.service.infrastructure.rds.repository;
 
 import concurrent.order.service.infrastructure.rds.entity.OrderEntity;
-import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 import reactor.core.publisher.Mono;
 
-import java.util.Optional;
 
-public interface OrderRepository extends ReactiveCrudRepository<OrderEntity, Long> {
+public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
 
-    Mono<OrderEntity> findByOrderId(String orderId);
-
+    OrderEntity findByOrderId(String orderId);
 
 }

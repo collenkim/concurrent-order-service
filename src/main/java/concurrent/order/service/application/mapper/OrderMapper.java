@@ -1,16 +1,19 @@
 package concurrent.order.service.application.mapper;
 
 import concurrent.order.service.application.command.dto.CreateOrderCommand;
-import concurrent.order.service.application.command.dto.OrderCommandResponse;
-import concurrent.order.service.application.query.dto.CreateOrderItemResponse;
+import concurrent.order.service.application.query.dto.OrderResponse;
 import concurrent.order.service.domain.model.Order;
 import concurrent.order.service.domain.model.OrderItem;
 import concurrent.order.service.infrastructure.rds.entity.OrderEntity;
 import concurrent.order.service.infrastructure.rds.entity.OrderItemEntity;
 import concurrent.order.service.infrastructure.rds.entity.ProductEntity;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class OrderMapper {
 
@@ -25,7 +28,7 @@ public class OrderMapper {
             .map(itemCmd -> new OrderItem(
                 itemCmd.productId(),
                 itemCmd.quantity(),
-                itemCmd.pricePerItem()
+                itemCmd.productPrice()
             ))
             .toList();
 
@@ -33,49 +36,33 @@ public class OrderMapper {
     }
 
     public static OrderEntity toOrderEntity(Order order) {
-
-        OrderEntity orderEntity = OrderEntity.createOrderEntity(order.getOrderId(), order.getStatus(), order.getMemberId(), order.getItems().size(), new ArrayList<>())
-
-        order.getItems().forEach(item -> item.assignOrder(order)); // 주인 측 설정
-        orderEntity.getOrderItems().addAll(orderItems);                 // 읽기용 필드에도 반영
-        return order;
-        return new OrderEntity(
-                order.getOrderId(),
-                order.getStatus(),
-                order.getMemberId(),
-                order.getItems().size(),
-
-        );
-
-        String orderId, OrderStatus status, String userId, Integer totalItemCnt, List<OrderItemEntity> orderItems
+        return OrderEntity.createOrderEntity(order.getOrderId(), order.getStatus(), order.getMemberId(), order.getItems().size(), new ArrayList<>());
     }
 
-    public static List<OrderItemEntity> toOrderItemEntities(Order order) {
+    public static List<OrderItemEntity> toOrderItemEntities(Order order, OrderEntity orderEntity, List<ProductEntity> products) {
+        Map<String, ProductEntity> productMap = products.stream()
+            .collect(Collectors.toMap(ProductEntity::getProductId, Function.identity()));
+
         return order.getItems().stream()
-                .map(item -> OrderItemEntity.createOrderItem(
-                        new ProductEntity(item.getProductId()), // 또는 ProductEntity 참조 조회
-                        item.getQuantity(),
-                        item.getProductPrice()
-                ))
-                .toList();
-    }
-
-    public static CreateOrderItemResponse toResponse(OrderEntity entity) {
-        List<OrderItemEntity> items = entity.getOrderItems().stream()
-            .map(item -> new (
-                item.getProductId(),
-                item.getQuantity(),
-                item.getPricePerItem()
-            ))
+            .map(item -> {
+                ProductEntity product = productMap.get(item.getProductId());
+                if (product == null) {
+                    throw new IllegalArgumentException("Product not found for id: " + item.getProductId());
+                }
+                return OrderItemEntity.createOrderItem(
+                    orderEntity,
+                    product,
+                    item.getQuantity(),
+                    item.getProductPrice()
+                );
+            })
             .toList();
-
-        return new CreateOrderItemResponse(
-            entity.getOrderId(),
-            entity.getMemberId(),
-            entity.getTotalPrice(),
-            entity.getStatus().name(),
-            items
-        );
     }
 
+    public static OrderResponse toOrderResponse(OrderEntity orderEntity) {
+        return new OrderResponse(
+            orderEntity.getOrderId()
+        );
+
+    }
 }

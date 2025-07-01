@@ -7,15 +7,18 @@ import concurrent.order.service.application.mapper.OrderMapper;
 import concurrent.order.service.application.command.service.OrderCommandService;
 import concurrent.order.service.application.query.OrderQueryService;
 import concurrent.order.service.application.query.ProductQueryService;
+import concurrent.order.service.application.query.dto.OrderResponse;
 import concurrent.order.service.domain.model.Order;
 import concurrent.order.service.generator.OrderIdGenerator;
 import concurrent.order.service.infrastructure.rds.entity.OrderEntity;
 import concurrent.order.service.infrastructure.rds.entity.OrderItemEntity;
+import concurrent.order.service.infrastructure.rds.entity.ProductEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import reactor.core.scheduler.Schedulers;
 
 @Component
 @RequiredArgsConstructor
@@ -31,7 +34,7 @@ public class OrderFacade {
      * @param request
      * @return
      */
-    public Mono<OrderCommandResponse> createOrder(CreateOrderCommand request) {
+    public Mono<OrderResponse> createOrder(CreateOrderCommand request) {
 
         //Order Id 생성
         final String orderId = OrderIdGenerator.getGenerateOrderId();
@@ -45,27 +48,23 @@ public class OrderFacade {
         //order.applyDiscount(request.discountRate()); // 할인 적용
         //order.validate(); // 유효성 검사
 
-        //Order 등록
-        OrderEntity entity = OrderMapper.toOrderEntity(order);
-        List<OrderItemEntity> entities = OrderMapper.toOrderItemEntities(order);
+        return Mono.fromCallable(() -> productQueryService.getProductsByIds(productIds))
+            .subscribeOn(Schedulers.boundedElastic())
+            .flatMap(products -> {
+                OrderEntity entity = OrderMapper.toOrderEntity(order);
+                List<OrderItemEntity> entities = OrderMapper.toOrderItemEntities(order, entity, products);
+                entity.addOrderItem(entities);
 
-        return productQueryService.getProductsByIds(productIds) // Mono<List<ProductEntity>>
-                .flatMap(products -> {
-                    // 1. Entity 생성
-                    OrderEntity orderEntity = OrderMapper.toOrderEntity(order);
-                    List<OrderItemEntity> orderItemEntities = OrderMapper.toOrderItemEntities(order, products, orderEntity);
-                    orderEntity.setOrderItems(orderItemEntities); // 연관관계 설정
-
-                    // 2. 저장 후 조회
-                    return orderCommandService.createOrder(orderEntity, orderItemEntities)
-                            .then(orderQueryService.getOrder(orderId));
-                })
-                .map(orderEntity -> new OrderCommandResponse(
-                        orderEntity.getId(),
-                        orderEntity.getMemberId(),
-                        orderEntity.getTotalPrice(),
-                        orderEntity.getStatus().name()
-                ));
+                // createOrder (JPA 저장) 호출도 감싸기
+                return Mono.fromRunnable(() -> orderCommandService.createOrder(entity, entities))
+                    .subscribeOn(Schedulers.boundedElastic())
+                    .then(
+                        // 조회 후 응답 매핑
+                        Mono.fromCallable(() -> orderQueryService.getOrder(orderId))
+                            .subscribeOn(Schedulers.boundedElastic())
+                            .map(OrderMapper::toOrderResponse)
+                    );
+            });
     }
 
 }

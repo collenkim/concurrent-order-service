@@ -57,4 +57,11 @@ public class OrderEntity extends BaseEntity{
         this.status = OrderStatus.CANCELED;
     }
 
+    /**
+     * 주문 아이템 추가
+     * @param items
+     */
+    public void addOrderItem(List<OrderItemEntity> items){
+        orderItems.addAll(items);
+    }
 }
