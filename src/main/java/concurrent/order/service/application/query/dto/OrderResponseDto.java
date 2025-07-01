@@ -18,8 +18,6 @@ public class OrderResponseDto {
     private BigDecimal totalAmount;
     private String deliverType;
     private LocalDateTime createAt;
-
     private List<OrderItemResponseDto> items;
-
-
+    
 }
