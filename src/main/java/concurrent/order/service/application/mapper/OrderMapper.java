@@ -1,6 +1,6 @@
 package concurrent.order.service.application.mapper;
 
-import concurrent.order.service.application.command.dto.CreateOrderCommandDto;
+import concurrent.order.service.application.command.dto.CreateOrderDto;
 import concurrent.order.service.application.query.dto.OrderResponseDto;
 import concurrent.order.service.domain.model.Order;
 import concurrent.order.service.domain.model.OrderItem;
@@ -22,7 +22,7 @@ public class OrderMapper {
      * @param command the command containing order details
      * @return an Order object
      */
-    public static Order toOrderDomain(String orderId, String memberId, CreateOrderCommandDto command) {
+    public static Order toOrderDomain(String orderId, String memberId, CreateOrderDto command) {
         List<OrderItem> items = command.items().stream()
             .map(itemCmd -> new OrderItem(
                 itemCmd.productId(),

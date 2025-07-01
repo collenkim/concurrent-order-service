@@ -1,7 +1,7 @@
 package concurrent.order.service.application.facade;
 
-import concurrent.order.service.application.command.dto.CreateOrderCommandDto;
-import concurrent.order.service.application.command.dto.CreateOrderItemCommandDto;
+import concurrent.order.service.application.command.dto.CreateOrderDto;
+import concurrent.order.service.application.command.dto.CreateOrderItemDto;
 import concurrent.order.service.application.mapper.OrderMapper;
 import concurrent.order.service.application.command.service.OrderCommandService;
 import concurrent.order.service.application.query.OrderQueryService;
@@ -34,7 +34,7 @@ public class OrderFacade {
      * @param request
      * @return
      */
-    public Mono<OrderResponseDto> createOrder(CreateOrderCommandDto request) {
+    public Mono<OrderResponseDto> createOrder(CreateOrderDto request) {
 
         //Order Id 생성
         final String orderId = OrderIdGenerator.getGenerateOrderId();
@@ -44,7 +44,7 @@ public class OrderFacade {
         Order order = OrderMapper.toOrderDomain(orderId, tempUserId, request);
 
         List<String> productIds = request.items().stream()
-                .map(CreateOrderItemCommandDto::productId)
+                .map(CreateOrderItemDto::productId)
                 .toList();
 
         //order.applyDiscount(request.discountRate()); // 할인 적용
