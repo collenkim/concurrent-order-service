@@ -1,7 +1,6 @@
 package concurrent.order.service.route;
 
-import concurrent.order.service.application.command.service.OrderCommandService;
-import concurrent.order.service.application.command.dto.CreateOrderCommand;
+import concurrent.order.service.application.command.dto.CreateOrderCommandDto;
 import concurrent.order.service.application.facade.OrderFacade;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +19,7 @@ public class OrderCommandHandler {
     private final Validator validator;
 
     public Mono<ServerResponse> createOrder(ServerRequest req) {
-        return req.bodyToMono(CreateOrderCommand.class)
+        return req.bodyToMono(CreateOrderCommandDto.class)
             .doOnNext(command -> {
                 var violations = validator.validate(command);
                 if (!violations.isEmpty()) {

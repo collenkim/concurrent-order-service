@@ -1,14 +1,13 @@
 package concurrent.order.service.application.mapper;
 
-import concurrent.order.service.application.command.dto.CreateOrderCommand;
-import concurrent.order.service.application.query.dto.OrderResponse;
+import concurrent.order.service.application.command.dto.CreateOrderCommandDto;
+import concurrent.order.service.application.query.dto.OrderResponseDto;
 import concurrent.order.service.domain.model.Order;
 import concurrent.order.service.domain.model.OrderItem;
 import concurrent.order.service.infrastructure.rds.entity.OrderEntity;
 import concurrent.order.service.infrastructure.rds.entity.OrderItemEntity;
 import concurrent.order.service.infrastructure.rds.entity.ProductEntity;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +22,7 @@ public class OrderMapper {
      * @param command the command containing order details
      * @return an Order object
      */
-    public static Order toOrderDomain(String orderId, String memberId, CreateOrderCommand command) {
+    public static Order toOrderDomain(String orderId, String memberId, CreateOrderCommandDto command) {
         List<OrderItem> items = command.items().stream()
             .map(itemCmd -> new OrderItem(
                 itemCmd.productId(),
@@ -59,8 +58,8 @@ public class OrderMapper {
             .toList();
     }
 
-    public static OrderResponse toOrderResponse(OrderEntity orderEntity) {
-        return new OrderResponse(
+    public static OrderResponseDto toOrderResponse(OrderEntity orderEntity) {
+        return new OrderResponseDto(
             orderEntity.getOrderId()
         );
 

@@ -15,7 +15,7 @@ public interface OrderCommandService {
      * @param entities
      * @return
      */
-    Mono<Void> createOrder(OrderEntity entity, List<OrderItemEntity> entities);
+    void createOrder(OrderEntity entity, List<OrderItemEntity> entities);
 
     /**
      * 주문 취소 명령
@@ -23,6 +23,6 @@ public interface OrderCommandService {
      * @param orderId
      * @return
      */
-    Mono<Void> cancelOrder(String orderId);
+    void cancelOrder(String orderId);
 
 }

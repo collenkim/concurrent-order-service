@@ -1,9 +1,6 @@
 package concurrent.order.service.application.query;
 
-import concurrent.order.service.application.query.dto.OrderResponse;
 import concurrent.order.service.infrastructure.rds.entity.OrderEntity;
-import concurrent.order.service.infrastructure.rds.entity.OrderItemEntity;
-import reactor.core.publisher.Mono;
 
 public interface OrderQueryService {
 

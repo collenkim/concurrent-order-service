@@ -5,9 +5,9 @@ import jakarta.validation.constraints.NotEmpty;
 
 import java.util.List;
 
-public record CreateOrderCommand(
+public record CreateOrderCommandDto(
         @NotBlank(message = "유저 ID는 필수 입니다.")
         String userId,
         @NotEmpty(message = "주문 항목은 하나 이상이어야 합니다.")
-        List<CreateOrderItemCommand> items
+        List<CreateOrderItemCommandDto> items
 ){}

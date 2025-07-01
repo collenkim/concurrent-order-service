@@ -1,5 +1,6 @@
 package concurrent.order.service.infrastructure.rds.entity;
 
+import concurrent.order.service.cd.ProductStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -20,24 +21,37 @@ public class ProductEntity extends BaseEntity{
     @Column(name = "product_id", nullable = false, unique = true)
     private String productId;
 
+    @Column(name = "category_id", nullable = false)
+    private String categoryId;
+
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "stocks", nullable = false)
+    @Column(name = "description", nullable = false)
+    private String description;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private ProductStatus status;
+
+    @Column(name = "stock_quantity", nullable = false)
     private Integer stockQuantity;
 
     @Column(name = "price", nullable = false)
     private BigDecimal price;
 
-    private ProductEntity(String productId, String name, BigDecimal price, Integer stockQuantity) {
+    private ProductEntity(String productId, String categoryId, String name, String description, ProductStatus status, Integer stockQuantity, BigDecimal price) {
         this.productId = productId;
+        this.categoryId = categoryId;
         this.name = name;
-        this.price = price;
+        this.description = description;
+        this.status = status;
         this.stockQuantity = stockQuantity;
+        this.price = price;
     }
 
-    public static ProductEntity createProductEntity(String productId, String name, BigDecimal price, Integer stockQuantity){
-        return new ProductEntity(productId, name, price, stockQuantity);
+    public static ProductEntity createProductEntity(String productId, String categoryId, String name, String description, ProductStatus status, Integer stockQuantity, BigDecimal price){
+        return new ProductEntity(productId, categoryId, name, description, status, stockQuantity, price);
     }
 
 }

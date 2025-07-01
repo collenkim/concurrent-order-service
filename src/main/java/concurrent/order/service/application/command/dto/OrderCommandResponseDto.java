@@ -1,4 +1,4 @@
 package concurrent.order.service.application.command.dto;
 
-public class OrderCommandResponse {
+public class OrderCommandResponseDto {
 }

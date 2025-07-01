@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Positive;
 
 import java.math.BigDecimal;
 
-public record CreateOrderItemCommand(
+public record CreateOrderItemCommandDto(
         @NotBlank(message = "상품 ID는 필수입니다.")
         String productId,
 
