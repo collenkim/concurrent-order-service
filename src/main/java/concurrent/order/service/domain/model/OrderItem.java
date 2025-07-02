@@ -1,5 +1,6 @@
 package concurrent.order.service.domain.model;
 
+import concurrent.order.service.exception.InvalidOrderValueException;
 import lombok.Getter;
 
 import java.math.BigDecimal;
@@ -15,17 +16,18 @@ public class OrderItem {
         this.productId = productId;
         this.quantity = quantity;
         this.productPrice = productPrice;
+        this.validate();
     }
 
     public void validate() {
         if (productId == null || productId.isBlank()) {
-            throw new IllegalArgumentException("상품 ID는 필수입니다.");
+            throw new InvalidOrderValueException("상품 ID는 필수입니다.");
         }
         if (productPrice == null || productPrice.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("상품 가격이 유효하지 않습니다.");
+            throw new InvalidOrderValueException("상품 가격이 유효하지 않습니다.");
         }
         if (quantity <= 0) {
-            throw new IllegalArgumentException("상품 수량이 0 이하일 수 없습니다.");
+            throw new InvalidOrderValueException("상품 수량이 0 이하일 수 없습니다.");
         }
     }
 

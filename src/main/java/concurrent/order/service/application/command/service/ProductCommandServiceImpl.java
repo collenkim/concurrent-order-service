@@ -5,7 +5,6 @@ import static concurrent.order.service.application.constants.OrderConstants.PROD
 import concurrent.order.service.exception.ProductStockExceededException;
 import concurrent.order.service.infrastructure.rds.entity.OrderItemEntity;
 import concurrent.order.service.infrastructure.rds.entity.ProductEntity;
-import concurrent.order.service.infrastructure.rds.repository.ProductRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,8 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class ProductCommandServiceImpl implements ProductCommandService {
-
-    private final ProductRepository productRepository;
 
     /**
      * 재고 차감

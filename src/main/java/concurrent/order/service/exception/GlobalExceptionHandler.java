@@ -83,6 +83,18 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
     }
 
+    @ExceptionHandler(InvalidOrderValueException.class)
+    public ResponseEntity<ErrorResponseDto.Res> handleInvalidOrderValueException(
+            InvalidOrderValueException e) {
+
+        ErrorResponseDto.Res res = this.getErrorResponseDto(ErrorCode.INVALID_ORDER_VALUE.getHttpStatus().value(),
+                ErrorCode.INVALID_ORDER_VALUE.getCode(), e.getMessage());
+
+        log.error("InvalidOrderException : {}", e.getMessage());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
+    }
+
     private ErrorResponseDto.Res getErrorResponseDto(int httpStatus, String errorCode, String errorMessage) {
         return ErrorResponseDto.Res.builder()
             .httpStatus(httpStatus)

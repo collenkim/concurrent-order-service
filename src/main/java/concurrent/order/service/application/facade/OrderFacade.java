@@ -45,11 +45,6 @@ public class OrderFacade {
 
         final String orderId = IdGenerator.getGenerateOrderId();
         Order order = OrderMapper.toDomain(orderId, request);
-        order.validate();
-
-        for(OrderItem orderItem : order.getItems()){
-            orderItem.validate();
-        }
 
         order.calculateDiscountAmount(); // 할인 적용
 

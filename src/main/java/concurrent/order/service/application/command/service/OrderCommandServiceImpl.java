@@ -1,8 +1,6 @@
 package concurrent.order.service.application.command.service;
 
 import concurrent.order.service.infrastructure.rds.entity.OrderEntity;
-import concurrent.order.service.infrastructure.rds.entity.OrderItemEntity;
-import concurrent.order.service.infrastructure.rds.repository.OrderItemRepository;
 import concurrent.order.service.infrastructure.rds.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,7 +13,6 @@ import java.util.List;
 public class OrderCommandServiceImpl implements OrderCommandService{
 
     private final OrderRepository orderRepository;
-    private final OrderItemRepository orderItemRepository;
 
     /**
      * 주문 생성
@@ -39,7 +36,6 @@ public class OrderCommandServiceImpl implements OrderCommandService{
     @Override
     public void cancelOrder(OrderEntity entity) {
         entity.orderCancel();
-        //orderRepository.save(entity);
     }
 
 }

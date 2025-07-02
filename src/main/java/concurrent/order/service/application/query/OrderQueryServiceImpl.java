@@ -4,7 +4,6 @@ import static concurrent.order.service.application.constants.OrderConstants.NOT_
 
 import concurrent.order.service.exception.NotFoundOrderException;
 import concurrent.order.service.infrastructure.rds.entity.OrderEntity;
-import concurrent.order.service.infrastructure.rds.repository.OrderItemRepository;
 import concurrent.order.service.infrastructure.rds.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class OrderQueryServiceImpl implements OrderQueryService {
 
     private final OrderRepository orderRepository;
-    private final OrderItemRepository orderItemRepository;
 
     /**
      * 주문정보 조회

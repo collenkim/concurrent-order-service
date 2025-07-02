@@ -4,6 +4,8 @@ import concurrent.order.service.cd.OrderStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
+import concurrent.order.service.exception.InvalidOrderValueException;
 import lombok.Getter;
 
 import java.util.List;
@@ -39,6 +41,7 @@ public class Order {
         this.items = items;
         this.originalTotalAmount = calculateTotalAmount();
         this.paymentAmount = originalTotalAmount; // 초기 결제 금액은 원래 총 금액
+        this.validate();
     }
 
     public BigDecimal calculateTotalAmount() {
@@ -62,20 +65,20 @@ public class Order {
     public void validate() {
 
         if (orderId == null || orderId.isBlank()) {
-            throw new IllegalArgumentException("주문 ID는 필수입니다.");
+            throw new InvalidOrderValueException("주문 ID는 필수입니다.");
         }
 
         if (memberId == null || memberId.isBlank()) {
-            throw new IllegalArgumentException("주문 ID는 필수입니다.");
+            throw new InvalidOrderValueException("주문 ID는 필수입니다.");
         }
 
         if (items == null || items.isEmpty()) {
-            throw new IllegalArgumentException("주문 상품이 비어있습니다.");
+            throw new InvalidOrderValueException("주문 상품이 비어있습니다.");
         }
 
         if (discountAmount != null && discountAmount.compareTo(BigDecimal.ZERO) > 0) {
             if (discountPolicyId == null || discountPolicyId.isBlank()) {
-                throw new IllegalArgumentException("할인 정책 ID는 필수입니다.");
+                throw new InvalidOrderValueException("할인 정책 ID는 필수입니다.");
             }
         }
     }
