@@ -1,5 +1,7 @@
 package concurrent.order.service.application.query;
 
+import static concurrent.order.service.application.constants.OrderConstants.NOT_FOUND_ORDER_MSG;
+
 import concurrent.order.service.exception.NotFoundOrderException;
 import concurrent.order.service.infrastructure.rds.entity.OrderEntity;
 import concurrent.order.service.infrastructure.rds.repository.OrderItemRepository;
@@ -24,7 +26,7 @@ public class OrderQueryServiceImpl implements OrderQueryService {
     @Transactional(readOnly = true)
     @Override
     public OrderEntity getOrder(String orderId) {
-        return orderRepository.findByOrderId(orderId).orElseThrow(() -> new NotFoundOrderException("주문을 찾을 수 없습니다. orderId=" + orderId));
+        return orderRepository.findByOrderId(orderId).orElseThrow(() -> new NotFoundOrderException(String.format(NOT_FOUND_ORDER_MSG, orderId)));
     }
 
     /**
@@ -35,7 +37,7 @@ public class OrderQueryServiceImpl implements OrderQueryService {
     @Transactional(readOnly = true)
     @Override
     public OrderEntity getOrderWithItemsAndProducts(String orderId) {
-        return orderRepository.findByOrderIdWithItemsAndProducts(orderId).orElseThrow(() -> new NotFoundOrderException("주문을 찾을 수 없습니다. orderId=" + orderId));
+        return orderRepository.findByOrderIdWithItemsAndProducts(orderId).orElseThrow(() -> new NotFoundOrderException(String.format(NOT_FOUND_ORDER_MSG, orderId)));
     }
 
 }

@@ -58,6 +58,18 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
     }
 
+    @ExceptionHandler(LockAcquisitionFailedException.class)
+    public ResponseEntity<ErrorResponseDto.Res> handleLockAcquisitionFailedException(
+        LockAcquisitionFailedException e) {
+
+        ErrorResponseDto.Res res = this.getErrorResponseDto(ErrorCode.LOCK_ACQUISITION_FAILED.getHttpStatus().value(),
+            ErrorCode.LOCK_ACQUISITION_FAILED.getCode(), e.getMessage());
+
+        log.error("LockAcquisitionFailedException : {}", e.getMessage());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(res);
+    }
+
     private ErrorResponseDto.Res getErrorResponseDto(int httpStatus, String errorCode, String errorMessage) {
         return ErrorResponseDto.Res.builder()
             .httpStatus(httpStatus)

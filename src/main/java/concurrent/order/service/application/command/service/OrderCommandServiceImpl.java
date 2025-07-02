@@ -26,9 +26,7 @@ public class OrderCommandServiceImpl implements OrderCommandService{
      */
     @Transactional
     @Override
-    public void createOrder(OrderEntity entity, List<OrderItemEntity> entities) {
-        List<OrderItemEntity> savedItems = orderItemRepository.saveAll(entities);
-        entity.addOrderItem(savedItems);
+    public void createOrder(OrderEntity entity) {
         orderRepository.save(entity);
     }
 
@@ -42,7 +40,7 @@ public class OrderCommandServiceImpl implements OrderCommandService{
     @Override
     public void cancelOrder(OrderEntity entity) {
         entity.orderCancel();
-        orderRepository.save(entity);
+        //orderRepository.save(entity);
     }
 
 }

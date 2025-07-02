@@ -3,6 +3,7 @@ package concurrent.order.service.application.command.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -16,5 +17,10 @@ public record CreateOrderDto(
         @NotBlank(message = "유저 ID는 필수 입니다.")
         String userId,
         @NotEmpty(message = "주문 항목은 하나 이상이어야 합니다.")
-        List<CreateOrderItemDto> items
+        List<CreateOrderItemDto> items,
+        String discountPolicyId,
+        BigDecimal discountAmount,
+        BigDecimal deliveryFee,
+        BigDecimal paymentAmount,
+        String paymentType
 ){}

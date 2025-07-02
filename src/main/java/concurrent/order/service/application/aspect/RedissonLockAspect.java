@@ -1,7 +1,9 @@
 package concurrent.order.service.application.aspect;
 
+import concurrent.order.service.exception.LockAcquisitionFailedException;
 import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
 import lombok.RequiredArgsConstructor;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -27,7 +29,6 @@ public class RedissonLockAspect {
     public Object lock(ProceedingJoinPoint joinPoint, DistributedLock distributedLock) throws Throwable {
 
         MethodSignature  signature = (MethodSignature) joinPoint.getSignature();
-        Method method = signature.getMethod();
         String[] paramNames = signature.getParameterNames();
         Object[] args = joinPoint.getArgs();
 
@@ -43,7 +44,7 @@ public class RedissonLockAspect {
 
         boolean locked = lock.tryLock(distributedLock.waitTime(), distributedLock.leaseTime(), TimeUnit.SECONDS);
         if (!locked) {
-            throw new IllegalStateException("락 획득 실패");
+            throw new LockAcquisitionFailedException("락 획득 실패");
         }
 
         try {

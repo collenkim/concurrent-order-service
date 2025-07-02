@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 public class OrderItemMapper {
 
     /**
+     * Converts an OrderItemEntity to an OrderItemResponseDto.
      *
      * @param entity
      * @return
@@ -28,6 +29,7 @@ public class OrderItemMapper {
     }
 
     /**
+     * Converts a list of OrderItemEntity objects to a list of OrderItemResponseDto objects.
      *
      * @param entities
      * @return

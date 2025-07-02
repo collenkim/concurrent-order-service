@@ -1,11 +1,9 @@
 package concurrent.order.service.api;
 
+import concurrent.order.service.application.async.OrderAsyncService;
 import concurrent.order.service.application.command.dto.CreateOrderDto;
-import concurrent.order.service.application.command.service.OrderCommandService;
-import concurrent.order.service.application.facade.OrderFacade;
-import concurrent.order.service.application.query.OrderQueryService;
 import concurrent.order.service.application.query.dto.OrderResponseDto;
-import concurrent.order.service.exception.NotFoundProductException;
+import concurrent.order.service.util.DeferredResultUtil;
 import java.util.concurrent.CompletionException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +15,7 @@ import org.springframework.web.context.request.async.DeferredResult;
 @RequiredArgsConstructor
 public class OrderApi {
 
-    private final OrderFacade orderFacade;
+    private final OrderAsyncService orderAsyncService;
 
     /**
      * 주문 등록 API
@@ -27,24 +25,7 @@ public class OrderApi {
      */
     @PostMapping
     public DeferredResult<ResponseEntity<OrderResponseDto>> createOrder(@RequestBody CreateOrderDto dto) {
-
-        DeferredResult<ResponseEntity<OrderResponseDto>> deferredResult = new DeferredResult<>();
-
-        orderFacade.createOrderAsyncWithLock(dto)
-            .thenAccept(result ->
-                deferredResult.setResult(ResponseEntity.ok(result))
-            )
-            .exceptionally((Throwable ex) -> {
-
-                Throwable cause = ex instanceof CompletionException && ex.getCause() != null
-                    ? ex.getCause()
-                    : ex;
-
-                deferredResult.setErrorResult(cause);
-                return null;
-            });
-
-        return deferredResult;
+        return DeferredResultUtil.fromCompletableFuture(orderAsyncService.createOrderAsync(dto));
     }
 
     /**
@@ -55,24 +36,7 @@ public class OrderApi {
      */
     @GetMapping("/{orderId}")
     public DeferredResult<ResponseEntity<OrderResponseDto>> getOrder(@PathVariable String orderId) {
-
-        DeferredResult<ResponseEntity<OrderResponseDto>> deferredResult = new DeferredResult<>();
-
-        orderFacade.getOrderAsync(orderId)
-            .thenAccept(result ->
-                deferredResult.setResult(ResponseEntity.ok(result))
-            )
-            .exceptionally((Throwable ex) -> {
-
-                Throwable cause = ex instanceof CompletionException && ex.getCause() != null
-                    ? ex.getCause()
-                    : ex;
-
-                deferredResult.setErrorResult(cause);
-                return null;
-            });
-
-        return deferredResult;
+        return DeferredResultUtil.fromCompletableFuture(orderAsyncService.getOrderAsync(orderId));
     }
 
     /**
@@ -82,25 +46,8 @@ public class OrderApi {
      * @return
      */
     @DeleteMapping("/{orderId}")
-    public DeferredResult<ResponseEntity<?>> cancelOrder(@PathVariable String orderId) {
-
-        DeferredResult<ResponseEntity<?>> deferredResult = new DeferredResult<>();
-
-        orderFacade.cancelOrderAsyncWithLock(orderId)
-            .thenAccept(result ->
-                deferredResult.setResult(ResponseEntity.noContent().build())
-            )
-            .exceptionally((Throwable ex) -> {
-
-                Throwable cause = ex instanceof CompletionException && ex.getCause() != null
-                    ? ex.getCause()
-                    : ex;
-
-                deferredResult.setErrorResult(cause);
-                return null;
-            });
-
-        return deferredResult;
+    public DeferredResult<ResponseEntity<Object>> cancelOrder(@PathVariable String orderId) {
+        return DeferredResultUtil.fromVoidFuture(orderAsyncService.cancelOrderAsync(orderId));
     }
 
 }

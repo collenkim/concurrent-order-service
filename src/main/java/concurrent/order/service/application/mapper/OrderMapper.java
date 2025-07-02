@@ -5,7 +5,7 @@ import concurrent.order.service.application.query.dto.OrderResponseDto;
 import concurrent.order.service.domain.model.Order;
 import concurrent.order.service.domain.model.OrderItem;
 import concurrent.order.service.infrastructure.rds.entity.OrderEntity;
-import java.util.ArrayList;
+import java.math.BigDecimal;
 import java.util.List;
 
 public class OrderMapper {
@@ -25,7 +25,16 @@ public class OrderMapper {
             ))
             .toList();
 
-        return new Order(orderId, command.userId(), items);
+        Order order = new Order(orderId, command.userId(), items);
+
+        order.setDiscountPolicyId(command.discountPolicyId());
+        order.setDiscountAmount(command.discountAmount());
+        order.setDeliveryFee(command.deliveryFee());
+        order.setPaymentAmount(command.paymentAmount());
+        order.setPaymentType(command.paymentType());
+        order.setFreeDelivery(order.getDeliveryFee().compareTo(BigDecimal.ZERO) == 0);
+
+        return order;
     }
 
     /**
@@ -35,7 +44,17 @@ public class OrderMapper {
      * @return an OrderEntity object
      */
     public static OrderEntity toEntity(Order order) {
-        return OrderEntity.createOrderEntity(order.getOrderId(), order.getStatus(), order.getMemberId(), order.getItems().size(), order.calculateTotalAmount(), new ArrayList<>());
+        return OrderEntity.createOrderEntity(order.getOrderId(),
+            order.getStatus(),
+            order.getMemberId(),
+            order.getItems().size(),
+            order.getOriginalTotalAmount(),
+            order.getDiscountPolicyId(), // null 허용
+            order.getDiscountAmount() != null ? order.getDiscountAmount() : BigDecimal.ZERO,
+            order.isFreeDelivery(),
+            order.getDeliveryFee() != null ? order.getDeliveryFee() : BigDecimal.ZERO,
+            order.getPaymentAmount() != null ? order.getPaymentAmount() : order.getOriginalTotalAmount(),
+            order.getPaymentType()); // null 허용);
     }
 
     /**
@@ -49,8 +68,9 @@ public class OrderMapper {
             orderEntity.getOrderId(),
                 orderEntity.getUserId(),
                 orderEntity.getStatus().getName(),
-                orderEntity.getTotalAmount(),
+                orderEntity.getPaymentAmount(),
                 orderEntity.getCreateDt(),
+                orderEntity.getCanceledAt(),
                 OrderItemMapper.toResponseDtoList(orderEntity.getOrderItems())
         );
 

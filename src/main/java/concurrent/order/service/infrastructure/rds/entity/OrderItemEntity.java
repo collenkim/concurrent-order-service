@@ -42,4 +42,8 @@ public class OrderItemEntity {
         return new OrderItemEntity(order, product, quantity, price);
     }
 
+    public void setOrder(OrderEntity order) {
+        this.order = order;
+    }
+
 }
