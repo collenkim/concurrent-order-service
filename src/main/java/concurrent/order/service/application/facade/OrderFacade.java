@@ -3,6 +3,7 @@ package concurrent.order.service.application.facade;
 import concurrent.order.service.application.aspect.DistributedLock;
 import concurrent.order.service.application.command.dto.CreateOrderDto;
 import concurrent.order.service.application.command.dto.CreateOrderItemDto;
+import concurrent.order.service.application.command.service.ProductCommandService;
 import concurrent.order.service.application.mapper.OrderItemMapper;
 import concurrent.order.service.application.mapper.OrderMapper;
 import concurrent.order.service.application.command.service.OrderCommandService;
@@ -30,6 +31,7 @@ public class OrderFacade {
 
     private final OrderCommandService orderCommandService;
     private final OrderQueryService orderQueryService;
+    private final ProductCommandService productCommandService;
     private final ProductQueryService productQueryService;
 
     @Transactional
@@ -64,7 +66,8 @@ public class OrderFacade {
 
         orderCommandService.createOrder(orderEntity);
 
-        //주문 재고 차감
+        //주문 재고 차감 (이벤트를 발행하여 상품 서비스 혹은 재고 관리 서비스에서 재고가 차감될 수 있도록 하는게 좋음)
+        productCommandService.decreaseProductStockByOrderItems(orderItems);
 
         return OrderMapper.toResponseDto(orderQueryService.getOrderWithItemsAndProducts(orderId));
     }

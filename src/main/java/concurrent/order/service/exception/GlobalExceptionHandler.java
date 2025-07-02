@@ -70,6 +70,18 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(res);
     }
 
+    @ExceptionHandler(ProductStockExceededException.class)
+    public ResponseEntity<ErrorResponseDto.Res> handleProductStockExceededException(
+        ProductStockExceededException e) {
+
+        ErrorResponseDto.Res res = this.getErrorResponseDto(ErrorCode.PRODUCT_STOCK_EXCEEDED.getHttpStatus().value(),
+            ErrorCode.PRODUCT_STOCK_EXCEEDED.getCode(), e.getMessage());
+
+        log.error("ProductStockExceededException : {}", e.getMessage());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
+    }
+
     private ErrorResponseDto.Res getErrorResponseDto(int httpStatus, String errorCode, String errorMessage) {
         return ErrorResponseDto.Res.builder()
             .httpStatus(httpStatus)

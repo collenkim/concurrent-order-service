@@ -7,7 +7,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import org.hibernate.annotations.DynamicUpdate;
 
+@DynamicUpdate
 @Getter
 @Entity
 @Table(name = "products")
@@ -52,6 +54,10 @@ public class ProductEntity extends BaseEntity{
 
     public static ProductEntity createProductEntity(String productId, String categoryId, String name, String description, ProductStatus status, Integer stockQuantity, BigDecimal price){
         return new ProductEntity(productId, categoryId, name, description, status, stockQuantity, price);
+    }
+
+    public void decreaseStock(int quantity) {
+        this.stockQuantity -= quantity;
     }
 
 }
