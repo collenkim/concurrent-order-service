@@ -10,12 +10,16 @@ import concurrent.order.service.application.query.OrderQueryService;
 import concurrent.order.service.application.query.ProductQueryService;
 import concurrent.order.service.application.query.dto.OrderResponseDto;
 import concurrent.order.service.domain.model.Order;
+import concurrent.order.service.exception.NotFoundProductException;
 import concurrent.order.service.generator.IdGenerator;
 import concurrent.order.service.infrastructure.rds.entity.OrderEntity;
 import concurrent.order.service.infrastructure.rds.entity.OrderItemEntity;
 import concurrent.order.service.infrastructure.rds.entity.ProductEntity;
+import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
@@ -36,33 +40,38 @@ public class OrderFacade {
      * @param request
      * @return
      */
-    @DistributedLock(key = "'lock:order:' + #request.userId")
-    public OrderResponseDto createOrder(CreateOrderDto request) {
+    @Transactional
+    @Async("orderExecutor")
+    @DistributedLock(key = "'lock:order:' + #request.userId", waitTime = 10, leaseTime = 30)
+    public CompletableFuture<OrderResponseDto> createOrderAsyncWithLock(CreateOrderDto request) {
 
-        //Order Id 생성
-        final String orderId = IdGenerator.getGenerateOrderId();
+        return CompletableFuture.supplyAsync(() -> {
 
-        Order order = OrderMapper.toDomain(orderId, request);
+            //Order Id 생성
+            final String orderId = IdGenerator.getGenerateOrderId();
 
-        List<String> productIds = request.items().stream()
+            Order order = OrderMapper.toDomain(orderId, request);
+
+            //order.applyDiscount(request.discountRate()); // 할인 적용
+            //order.validate(); // 유효성 검사
+
+            List<String> productIds = request.items().stream()
                 .map(CreateOrderItemDto::productId)
                 .toList();
 
-        //order.applyDiscount(request.discountRate()); // 할인 적용
-        //order.validate(); // 유효성 검사
+            List<ProductEntity> products = productQueryService.getProductsByIds(productIds);
 
-        List<ProductEntity> products = productQueryService.getProductsByIds(productIds);
+            if(CollectionUtils.isEmpty(products)){
+                throw new NotFoundProductException("상품이 존재하지 않습니다.");
+            }
 
-        /*if(CollectionUtils.isEmpty(products)){
-            throw new
-        }*/
+            OrderEntity orderEntity = OrderMapper.toEntity(order);
+            List<OrderItemEntity> orderItems = OrderItemMapper.toEntities(order, orderEntity, products);
 
-        OrderEntity orderEntity = OrderMapper.toEntity(order);
-        List<OrderItemEntity> orderItems = OrderItemMapper.toEntities(order, orderEntity, products);
+            orderCommandService.createOrder(orderEntity, orderItems);
 
-        orderCommandService.createOrder(orderEntity, orderItems);
-
-        return OrderMapper.toResponseDto(orderQueryService.getOrder(orderId));
+            return OrderMapper.toResponseDto(orderQueryService.getOrderWithItems(orderId));
+        });
     }
 
     /**

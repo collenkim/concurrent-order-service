@@ -22,15 +22,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity.internalServerError().body(res);
     }
 
-    @ExceptionHandler(NotExistsProductException.class)
-    public ResponseEntity<ErrorResponseDto.Res> handleNotExistsProductException(Exception e) {
+    @ExceptionHandler(NotFoundProductException.class)
+    public ResponseEntity<ErrorResponseDto.Res> handleNotFoundProductException(
+        NotFoundProductException e) {
 
-        ErrorResponseDto.Res res = this.getErrorResponseDto(ErrorCode.DEFAULT_500.getHttpStatus().value(),
-            ErrorCode.DEFAULT_500.getCode(), ErrorCode.DEFAULT_500.getMessage());
+        ErrorResponseDto.Res res = this.getErrorResponseDto(ErrorCode.NOT_FOUND_PRODUCT.getHttpStatus().value(),
+            ErrorCode.NOT_FOUND_PRODUCT.getCode(), e.getMessage());
 
-        log.error("NotExistsProductException : {}", e.getMessage());
+        log.error("ProductNotFoundException : {}", e.getMessage());
 
-        return ResponseEntity.internalServerError().body(res);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
     }
 
     private ErrorResponseDto.Res getErrorResponseDto(int httpStatus, String errorCode, String errorMessage) {

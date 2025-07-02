@@ -7,7 +7,6 @@ import concurrent.order.service.infrastructure.rds.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import reactor.core.publisher.Mono;
 
 import java.util.NoSuchElementException;
 
@@ -21,7 +20,13 @@ public class OrderQueryServiceImpl implements OrderQueryService {
     @Transactional(readOnly = true)
     @Override
     public OrderEntity getOrder(String orderId) {
-        return orderRepository.findByOrderId(orderId).orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다. orderId=" + orderId));
+        return orderRepository.findByOrderId(orderId).orElseThrow(() -> new NoSuchElementException("주문을 찾을 수 없습니다. orderId=" + orderId));
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public OrderEntity getOrderWithItems(String orderId) {
+        return orderRepository.findByOrderIdWithItems(orderId).orElseThrow(() -> new IllegalArgumentException("주문을 찾을 수 없습니다. orderId=" + orderId));
     }
 
 }

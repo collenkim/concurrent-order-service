@@ -13,5 +13,13 @@ public interface OrderQueryService {
      */
     OrderEntity getOrder(String orderId);
 
+    /**
+     * 주문정보 조회
+     *
+     * @param orderId
+     * @return
+     */
+    OrderEntity getOrderWithItems(String orderId);
+
     //Mono<OrderDetailResponse> getOrderDetail(String orderId);
 }
