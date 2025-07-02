@@ -7,7 +7,6 @@ import concurrent.order.service.infrastructure.rds.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -36,12 +35,14 @@ public class OrderCommandServiceImpl implements OrderCommandService{
     /**
      * 주문 취소 명령
      *
-     * @param orderId
+     * @param entity
      * @return
      */
+    @Transactional
     @Override
-    public void cancelOrder(String orderId) {
-
+    public void cancelOrder(OrderEntity entity) {
+        entity.orderCancel();
+        orderRepository.save(entity);
     }
 
 }

@@ -10,6 +10,8 @@ import concurrent.order.service.application.query.OrderQueryService;
 import concurrent.order.service.application.query.ProductQueryService;
 import concurrent.order.service.application.query.dto.OrderResponseDto;
 import concurrent.order.service.domain.model.Order;
+import concurrent.order.service.exception.CompletedOrderCancelException;
+import concurrent.order.service.exception.NotFoundOrderException;
 import concurrent.order.service.exception.NotFoundProductException;
 import concurrent.order.service.generator.IdGenerator;
 import concurrent.order.service.infrastructure.rds.entity.OrderEntity;
@@ -40,38 +42,37 @@ public class OrderFacade {
      * @param request
      * @return
      */
-    @Transactional
     @Async("orderExecutor")
-    @DistributedLock(key = "'lock:order:' + #request.userId", waitTime = 10, leaseTime = 30)
     public CompletableFuture<OrderResponseDto> createOrderAsyncWithLock(CreateOrderDto request) {
+        return CompletableFuture.supplyAsync(() -> createOrderWithLockInternal(request));
+    }
 
-        return CompletableFuture.supplyAsync(() -> {
+    @Transactional
+    @DistributedLock(key = "'lock:order:create:' + #request.userId", waitTime = 10, leaseTime = 30)
+    public OrderResponseDto createOrderWithLockInternal(CreateOrderDto request) {
+        final String orderId = IdGenerator.getGenerateOrderId();
+        Order order = OrderMapper.toDomain(orderId, request);
 
-            //Order Id 생성
-            final String orderId = IdGenerator.getGenerateOrderId();
+        //order.applyDiscount(request.discountRate()); // 할인 적용
+        //order.validate(); // 유효성 검사
 
-            Order order = OrderMapper.toDomain(orderId, request);
+        List<String> productIds = request.items().stream()
+            .map(CreateOrderItemDto::productId)
+            .toList();
 
-            //order.applyDiscount(request.discountRate()); // 할인 적용
-            //order.validate(); // 유효성 검사
+        List<ProductEntity> products = productQueryService.getProductsByIds(productIds);
 
-            List<String> productIds = request.items().stream()
-                .map(CreateOrderItemDto::productId)
-                .toList();
+        if (CollectionUtils.isEmpty(products)) {
+            throw new NotFoundProductException("상품이 존재하지 않습니다.");
+        }
 
-            List<ProductEntity> products = productQueryService.getProductsByIds(productIds);
+        OrderEntity orderEntity = OrderMapper.toEntity(order);
+        List<OrderItemEntity> orderItems = OrderItemMapper.toEntities(order, orderEntity, products);
+        orderCommandService.createOrder(orderEntity, orderItems);
 
-            if(CollectionUtils.isEmpty(products)){
-                throw new NotFoundProductException("상품이 존재하지 않습니다.");
-            }
+        //주문 재고 차감
 
-            OrderEntity orderEntity = OrderMapper.toEntity(order);
-            List<OrderItemEntity> orderItems = OrderItemMapper.toEntities(order, orderEntity, products);
-
-            orderCommandService.createOrder(orderEntity, orderItems);
-
-            return OrderMapper.toResponseDto(orderQueryService.getOrderWithItems(orderId));
-        });
+        return OrderMapper.toResponseDto(orderQueryService.getOrderWithItemsAndProducts(orderId));
     }
 
     /**
@@ -79,8 +80,27 @@ public class OrderFacade {
      * @param orderId
      * @return
      */
-    public OrderResponseDto getOrder(String orderId){
-        return OrderMapper.toResponseDto(orderQueryService.getOrder(orderId));
+    @Async("orderExecutor")
+    public CompletableFuture<OrderResponseDto> getOrderAsync(String orderId){
+        return CompletableFuture.completedFuture(OrderMapper.toResponseDto(orderQueryService.getOrderWithItemsAndProducts(orderId)));
+    }
+
+    @Async("orderExecutor")
+    public CompletableFuture<Void> cancelOrderAsyncWithLock(String orderId) {
+        cancelOrderInternal(orderId);
+        return CompletableFuture.completedFuture(null);
+    }
+
+    @Transactional
+    @DistributedLock(key = "'lock:order:cancel:' + #orderId")
+    public void cancelOrderInternal(String orderId) {
+        OrderEntity order = orderQueryService.getOrder(orderId);
+
+        if (order.isCancel()) {
+            throw new CompletedOrderCancelException("이미 취소된 주문입니다. orderId=" + orderId);
+        }
+
+        orderCommandService.cancelOrder(order);
     }
 
 }

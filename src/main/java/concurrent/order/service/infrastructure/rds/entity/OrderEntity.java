@@ -62,6 +62,10 @@ public class OrderEntity extends BaseEntity{
         this.status = OrderStatus.CANCELED;
     }
 
+    public boolean isCancel(){
+        return this.status == OrderStatus.CANCELED;
+    }
+
     /**
      * 주문 아이템 추가
      * @param items

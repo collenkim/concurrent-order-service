@@ -5,6 +5,14 @@ import jakarta.validation.constraints.Positive;
 
 import java.math.BigDecimal;
 
+/**
+ * 주문 항목 생성 요청 Dto
+ *  - 상품 ID, 수량, 상품 가격을 포함
+ *
+ * @param productId   상품 ID
+ * @param quantity    수량
+ * @param productPrice 상품 가격
+ */
 public record CreateOrderItemDto(
         @NotBlank(message = "상품 ID는 필수입니다.")
         String productId,

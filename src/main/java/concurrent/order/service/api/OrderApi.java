@@ -54,8 +54,25 @@ public class OrderApi {
      * @return
      */
     @GetMapping("/{orderId}")
-    public ResponseEntity<OrderResponseDto> getOrder(@PathVariable String orderId) {
-        return ResponseEntity.ok(orderFacade.getOrder(orderId));
+    public DeferredResult<ResponseEntity<OrderResponseDto>> getOrder(@PathVariable String orderId) {
+
+        DeferredResult<ResponseEntity<OrderResponseDto>> deferredResult = new DeferredResult<>();
+
+        orderFacade.getOrderAsync(orderId)
+            .thenAccept(result ->
+                deferredResult.setResult(ResponseEntity.ok(result))
+            )
+            .exceptionally((Throwable ex) -> {
+
+                Throwable cause = ex instanceof CompletionException && ex.getCause() != null
+                    ? ex.getCause()
+                    : ex;
+
+                deferredResult.setErrorResult(cause);
+                return null;
+            });
+
+        return deferredResult;
     }
 
     /**
@@ -65,8 +82,25 @@ public class OrderApi {
      * @return
      */
     @DeleteMapping("/{orderId}")
-    public ResponseEntity<Void> cancelOrder(@PathVariable String orderId) {
-        return ResponseEntity.noContent().build();
+    public DeferredResult<ResponseEntity<?>> cancelOrder(@PathVariable String orderId) {
+
+        DeferredResult<ResponseEntity<?>> deferredResult = new DeferredResult<>();
+
+        orderFacade.cancelOrderAsyncWithLock(orderId)
+            .thenAccept(result ->
+                deferredResult.setResult(ResponseEntity.noContent().build())
+            )
+            .exceptionally((Throwable ex) -> {
+
+                Throwable cause = ex instanceof CompletionException && ex.getCause() != null
+                    ? ex.getCause()
+                    : ex;
+
+                deferredResult.setErrorResult(cause);
+                return null;
+            });
+
+        return deferredResult;
     }
 
 }

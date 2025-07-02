@@ -21,6 +21,7 @@ public class OrderItemMapper {
     public static OrderItemResponseDto toResponseDto(OrderItemEntity entity) {
         return new OrderItemResponseDto(
                 entity.getProduct().getProductId(),
+                entity.getProduct().getName(),
                 entity.getQuantity(),
                 entity.getPrice()
         );

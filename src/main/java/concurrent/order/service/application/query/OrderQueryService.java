@@ -19,7 +19,6 @@ public interface OrderQueryService {
      * @param orderId
      * @return
      */
-    OrderEntity getOrderWithItems(String orderId);
+    OrderEntity getOrderWithItemsAndProducts(String orderId);
 
-    //Mono<OrderDetailResponse> getOrderDetail(String orderId);
 }

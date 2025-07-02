@@ -11,6 +11,7 @@ import lombok.Setter;
 public class OrderItemResponseDto {
 
     private String productId;
+    private String productName;
     private Integer quantity;
     private BigDecimal unitPrice;
 

@@ -20,9 +20,9 @@ public interface OrderCommandService {
     /**
      * 주문 취소 명령
      *
-     * @param orderId
+     * @param entity
      * @return
      */
-    void cancelOrder(String orderId);
+    void cancelOrder(OrderEntity entity);
 
 }

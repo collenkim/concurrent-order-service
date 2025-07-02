@@ -42,8 +42,4 @@ public class OrderItemEntity {
         return new OrderItemEntity(order, product, quantity, price);
     }
 
-    public void assignOrder(OrderEntity order) {
-        this.order = order;
-    }
-
 }

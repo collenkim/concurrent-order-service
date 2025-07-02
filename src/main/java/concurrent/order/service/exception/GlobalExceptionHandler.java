@@ -22,6 +22,18 @@ public class GlobalExceptionHandler {
         return ResponseEntity.internalServerError().body(res);
     }
 
+    @ExceptionHandler(NotFoundOrderException.class)
+    public ResponseEntity<ErrorResponseDto.Res> handleNotFoundOrderException(
+        NotFoundOrderException e) {
+
+        ErrorResponseDto.Res res = this.getErrorResponseDto(ErrorCode.NOT_FOUND_ORDER.getHttpStatus().value(),
+            ErrorCode.NOT_FOUND_ORDER.getCode(), e.getMessage());
+
+        log.error("NotFoundOrderException : {}", e.getMessage());
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
+    }
+
     @ExceptionHandler(NotFoundProductException.class)
     public ResponseEntity<ErrorResponseDto.Res> handleNotFoundProductException(
         NotFoundProductException e) {
@@ -29,9 +41,21 @@ public class GlobalExceptionHandler {
         ErrorResponseDto.Res res = this.getErrorResponseDto(ErrorCode.NOT_FOUND_PRODUCT.getHttpStatus().value(),
             ErrorCode.NOT_FOUND_PRODUCT.getCode(), e.getMessage());
 
-        log.error("ProductNotFoundException : {}", e.getMessage());
+        log.error("NotFoundProductException : {}", e.getMessage());
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
+    }
+
+    @ExceptionHandler(CompletedOrderCancelException.class)
+    public ResponseEntity<ErrorResponseDto.Res> handleCompletedOrderCancelException(
+        CompletedOrderCancelException e) {
+
+        ErrorResponseDto.Res res = this.getErrorResponseDto(ErrorCode.COMPLETED_ORDER_CANCEL.getHttpStatus().value(),
+            ErrorCode.COMPLETED_ORDER_CANCEL.getCode(), e.getMessage());
+
+        log.error("CompletedOrderCancelException : {}", e.getMessage());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
     }
 
     private ErrorResponseDto.Res getErrorResponseDto(int httpStatus, String errorCode, String errorMessage) {
