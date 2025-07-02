@@ -2,7 +2,6 @@ package concurrent.order.service.application.mapper;
 
 import concurrent.order.service.application.query.dto.OrderItemResponseDto;
 import concurrent.order.service.domain.model.Order;
-import concurrent.order.service.infrastructure.mongo.document.OrderHistDocument.OrderItemLog;
 import concurrent.order.service.infrastructure.rds.entity.OrderEntity;
 import concurrent.order.service.infrastructure.rds.entity.OrderItemEntity;
 import concurrent.order.service.infrastructure.rds.entity.ProductEntity;
@@ -65,25 +64,6 @@ public class OrderItemMapper {
                     );
                 })
                 .toList();
-    }
-
-    /**
-     * Converts an OrderItemEntity and its associated ProductEntity to an OrderItemLog.
-     *
-     * @param item
-     * @param product
-     * @return
-     */
-    public static OrderItemLog toOrderItemLog(OrderItemEntity item, ProductEntity product) {
-        BigDecimal total = item.getPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
-
-        return OrderItemLog.builder()
-            .productId(product.getProductId())
-            .productName(product.getName())
-            .quantity(item.getQuantity())
-            .price(item.getPrice())
-            .totalAmount(total)
-            .build();
     }
 
 }

@@ -4,13 +4,10 @@ import concurrent.order.service.application.command.dto.CreateOrderDto;
 import concurrent.order.service.application.query.dto.OrderResponseDto;
 import concurrent.order.service.domain.model.Order;
 import concurrent.order.service.domain.model.OrderItem;
-import concurrent.order.service.infrastructure.mongo.document.OrderHistDocument;
-import concurrent.order.service.infrastructure.mongo.document.OrderHistDocument.OrderItemLog;
+import concurrent.order.service.infrastructure.kafka.dto.OrderCreatedEventDto;
 import concurrent.order.service.infrastructure.rds.entity.OrderEntity;
-import concurrent.order.service.infrastructure.rds.entity.OrderItemEntity;
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class OrderMapper {
 
@@ -36,7 +33,7 @@ public class OrderMapper {
         order.setDeliveryFee(command.deliveryFee());
         order.setPaymentAmount(command.paymentAmount());
         order.setPaymentType(command.paymentType());
-        order.setFreeDelivery(order.getDeliveryFee().compareTo(BigDecimal.ZERO) == 0);
+        order.setFreeDelivery(order.getDeliveryFee() != null && order.getDeliveryFee().compareTo(BigDecimal.ZERO) == 0);
 
         return order;
     }
@@ -80,34 +77,18 @@ public class OrderMapper {
 
     }
 
-    public static OrderHistDocument toDocument(OrderEntity orderEntity) {
-        return OrderHistDocument.builder()
-            .orderId(orderEntity.getOrderId())
-            .memberId(orderEntity.getUserId())
-            .status(orderEntity.getStatus().name())
-            .originalTotalAmount(orderEntity.getOriginalTotalAmount())
-            .discountPolicyId(orderEntity.getDiscountPolicyId())
-            .discountAmount(orderEntity.getDiscountAmount())
-            .deliveryFee(orderEntity.getDeliveryFee())
-            .isFreeDelivery(orderEntity.isFreeDelivery())
-            .paymentAmount(orderEntity.getPaymentAmount())
-            .paymentType(orderEntity.getPaymentType())
-            .orderedAt(orderEntity.getCreateDt())
-            .canceledAt(orderEntity.getCanceledAt())
-            .items(toItemLogs(orderEntity.getOrderItems()))
-            .build();
-    }
-
-    private static List<OrderItemLog> toItemLogs(List<OrderItemEntity> entities) {
-        return entities.stream()
-            .map(item -> new OrderItemLog(
-                item.getProduct().getProductId(),
-                item.getProduct().getName(),
-                item.getQuantity(),
-                item.getProduct().getPrice(),
-                item.getProduct().getPrice().multiply(BigDecimal.valueOf(item.getQuantity()))
-            ))
-            .collect(Collectors.toList());
+    /**
+     *
+     * @param order
+     * @return
+     */
+    public static OrderCreatedEventDto toOrderCreatedEvent(OrderEntity order) {
+        return OrderCreatedEventDto.builder()
+                .orderId(order.getOrderId())
+                .userId(order.getUserId())
+                .paymentAmount(order.getPaymentAmount())
+                .createdAt(order.getCreateDt())
+                .build();
     }
 
 }

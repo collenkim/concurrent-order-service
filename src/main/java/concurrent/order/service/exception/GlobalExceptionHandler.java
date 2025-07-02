@@ -1,5 +1,6 @@
 package concurrent.order.service.exception;
 
+import concurrent.order.service.exception.cd.ErrorCode;
 import concurrent.order.service.exception.dto.ErrorResponseDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

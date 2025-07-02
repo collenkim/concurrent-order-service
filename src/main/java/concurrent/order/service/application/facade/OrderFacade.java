@@ -15,12 +15,16 @@ import concurrent.order.service.domain.model.OrderItem;
 import concurrent.order.service.exception.CompletedOrderCancelException;
 import concurrent.order.service.exception.NotFoundProductException;
 import concurrent.order.service.generator.IdGenerator;
+import concurrent.order.service.infrastructure.kafka.dto.OrderCreatedEventDto;
+import concurrent.order.service.infrastructure.kafka.producer.KafkaOrderProducer;
 import concurrent.order.service.infrastructure.rds.entity.OrderEntity;
 import concurrent.order.service.infrastructure.rds.entity.OrderItemEntity;
 import concurrent.order.service.infrastructure.rds.entity.ProductEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
@@ -33,6 +37,7 @@ public class OrderFacade {
     private final OrderQueryService orderQueryService;
     private final ProductCommandService productCommandService;
     private final ProductQueryService productQueryService;
+    private final KafkaOrderProducer kafkaOrderProducer;
 
     @Transactional
     @DistributedLock(key = "'lock:order:create:' + #request.userId", waitTime = 10, leaseTime = 30)
@@ -69,8 +74,14 @@ public class OrderFacade {
         //주문 재고 차감 (이벤트를 발행하여 상품 서비스 혹은 재고 관리 서비스에서 재고가 차감될 수 있도록 하는게 좋음)
         productCommandService.decreaseProductStockByOrderItems(orderItems);
 
-        //OrderHistDocument document = OrderHistMapper.toDocument(orderEntity);
-        //mongoTemplate.save(document);
+        //메시지 발행 (주문 생성 완료)
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                OrderCreatedEventDto eventDto = OrderMapper.toOrderCreatedEvent(orderEntity);
+                kafkaOrderProducer.kafkaSendOrderCreatedEvent(eventDto);
+            }
+        });
 
         return OrderMapper.toResponseDto(orderQueryService.getOrderWithItemsAndProducts(orderId));
     }

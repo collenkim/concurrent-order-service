@@ -1,4 +1,4 @@
-package concurrent.order.service.exception;
+package concurrent.order.service.exception.cd;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

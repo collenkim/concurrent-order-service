@@ -21,7 +21,6 @@ public class OrderCommandServiceImpl implements OrderCommandService{
      * 주문 생성
      *
      * @param entity
-     * @param entities
      * @return
      */
     @Transactional
