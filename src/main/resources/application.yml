@@ -43,6 +43,10 @@ spring:
       database: 0
       host: 127.0.0.1
       port: 6379
+    mongodb:
+      host: localhost
+      port: 27017
+      database: order_mongo_db
 
 logging:
   pattern:
