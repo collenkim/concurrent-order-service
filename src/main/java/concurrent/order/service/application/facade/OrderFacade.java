@@ -66,7 +66,7 @@ public class OrderFacade {
 
         orderCommandService.createOrder(orderEntity);
 
-        //주문 재고 차감 (이벤트를 발행하여 상품 서비스 혹은 재고 관리 서비스에서 재고가 차감될 수 있도록 하는게 좋음)
+        //주문 재고 차감 (redis로 관리하거나 이벤트를 발행하여 상품 서비스 혹은 재고 관리 서비스에서 재고가 차감될 수 있도록 하는게 좋음)
         productCommandService.decreaseProductStockByOrderItems(orderItems);
 
         //메시지 발행 (주문 생성 완료)
